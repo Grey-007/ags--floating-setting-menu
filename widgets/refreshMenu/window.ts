@@ -76,7 +76,7 @@ function setupInputHandlers(window: Astal.Window) {
 
 const drawerRevealer = new Gtk.Revealer({
     transition_type: Gtk.RevealerTransitionType.CROSSFADE,
-    transition_duration: 1,
+    transition_duration: 200,
     reveal_child: false,
     child: RefreshMenuContent(),
 })

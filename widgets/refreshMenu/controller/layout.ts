@@ -77,14 +77,15 @@ function createVariable<T>(initial: T): Variable<T> {
 }
 
 const EDGE = 0
+const BOTTOM_DOCK_OFFSET = -7
 const FAB_SIZE = 56
-const GAP = 12
+const GAP = 10
 
 const bottomFab: Placement = {
     anchor: Astal.WindowAnchor.BOTTOM,
     marginTop: 0,
     marginRight: 0,
-    marginBottom: EDGE,
+    marginBottom: EDGE + BOTTOM_DOCK_OFFSET,
     marginLeft: 0,
 }
 
@@ -116,7 +117,7 @@ const bottomMenu: Placement = {
     anchor: Astal.WindowAnchor.BOTTOM,
     marginTop: 0,
     marginRight: 0,
-    marginBottom: EDGE + FAB_SIZE + GAP,
+    marginBottom: EDGE + FAB_SIZE + GAP + BOTTOM_DOCK_OFFSET,
     marginLeft: 0,
 }
 
