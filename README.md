@@ -1,5 +1,5 @@
 # AGS v3 Refresh Menu - Modern Architecture
-
+> ### ** No updates for next few months - still in development - its on pause for now **
 **Pure AGS v3** - No deprecated APIs. Self-registering windows. Pre-compiled styles.
 
 ## Quick Start
