@@ -1,0 +1,256 @@
+/*
+ * Refresh Menu Styles
+ * 
+ * Color variables prepared for future Matugen integration
+ * Currently using fallback dark theme values
+ */
+
+/* ============================================
+   Color Variables (Matugen-ready)
+   ============================================ */
+* {
+    /* Primary colors */
+    --primary: #89b4fa;
+    --primary-dim: #7aa2f7;
+    --on-primary: #1e1e2e;
+    
+    /* Surface colors */
+    --surface: #1e1e2e;
+    --surface-bright: #313244;
+    --surface-dim: #181825;
+    --on-surface: #cdd6f4;
+    --on-surface-variant: #a6adc8;
+    
+    /* State colors */
+    --success: #a6e3a1;
+    --error: #f38ba8;
+    --warning: #f9e2af;
+    
+    /* Spacing scale */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    
+    /* Radius scale */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    
+    /* Animation */
+    --transition-fast: 150ms ease-out;
+    --transition-normal: 250ms ease-out;
+    --transition-slow: 350ms ease-out;
+}
+
+/* ============================================
+   Window & Container
+   ============================================ */
+.refresh-menu-window {
+    background-color: transparent;
+}
+
+.refresh-menu-container {
+    margin: 0 var(--spacing-lg) var(--spacing-lg) 0;
+    gap: var(--spacing-md);
+}
+
+/* ============================================
+   Handle Button
+   ============================================ */
+.refresh-handle {
+    min-width: 56px;
+    min-height: 56px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary);
+    color: var(--on-primary);
+    border: none;
+    padding: 0;
+    transition: all var(--transition-normal);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.refresh-handle:hover {
+    background-color: var(--primary-dim);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.refresh-handle:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.refresh-handle-inner {
+    padding: 0;
+}
+
+.refresh-handle-icon {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* ============================================
+   Drawer Panel
+   ============================================ */
+.refresh-drawer-panel {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+    min-width: 280px;
+    max-width: 320px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--surface-bright);
+}
+
+/* ============================================
+   Section Component
+   ============================================ */
+.section {
+    gap: var(--spacing-sm);
+}
+
+.section-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.section-header:hover {
+    background-color: var(--surface-bright);
+}
+
+.section-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--on-surface);
+}
+
+.section-chevron {
+    font-size: 16px;
+    color: var(--on-surface-variant);
+    transition: transform var(--transition-fast);
+}
+
+.section-content {
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) 0 0 0;
+}
+
+/* ============================================
+   Refresh Apps Section
+   ============================================ */
+.refresh-apps-section .section-content {
+    gap: var(--spacing-sm);
+}
+
+.refresh-button {
+    padding: var(--spacing-md);
+    background-color: var(--surface-dim);
+    border: 1px solid var(--surface-bright);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.refresh-button:hover {
+    background-color: var(--surface-bright);
+    border-color: var(--primary-dim);
+    transform: translateX(2px);
+}
+
+.refresh-button:active {
+    transform: translateX(0);
+}
+
+.refresh-button-content {
+    gap: var(--spacing-md);
+}
+
+.refresh-button-icon {
+    font-size: 18px;
+    color: var(--primary);
+    min-width: 24px;
+}
+
+.refresh-button-label {
+    font-size: 14px;
+    color: var(--on-surface);
+    font-weight: 500;
+}
+
+.refresh-button-spinner {
+    min-width: 16px;
+    min-height: 16px;
+    color: var(--primary);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.refresh-button-spinner[active="true"] {
+    opacity: 1;
+}
+
+/* ============================================
+   Coming Soon Section
+   ============================================ */
+.coming-soon-section .section-header {
+    opacity: 0.6;
+}
+
+.coming-soon-content {
+    padding: var(--spacing-lg) var(--spacing-md);
+}
+
+.coming-soon-label {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+@media (max-width: 1920px) {
+    .refresh-drawer-panel {
+        min-width: 260px;
+    }
+}
+
+/* ============================================
+   Accessibility & Focus States
+   ============================================ */
+.refresh-handle:focus,
+.refresh-button:focus,
+.section-header:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ============================================
+   Animation Enhancements
+   ============================================ */
+.refresh-drawer-panel > * {
+    animation: fadeInUp 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.refresh-drawer-panel > *:nth-child(1) { animation-delay: 0ms; }
+.refresh-drawer-panel > *:nth-child(2) { animation-delay: 50ms; }
+.refresh-drawer-panel > *:nth-child(3) { animation-delay: 100ms; }
+.refresh-drawer-panel > *:nth-child(4) { animation-delay: 150ms; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
