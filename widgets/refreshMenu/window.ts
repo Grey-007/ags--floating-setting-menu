@@ -1,88 +1,95 @@
-/**
- * Refresh Menu Window - AGS v3
- * 
- * Windows self-register in AGS v3 - no manual mounting needed
- */
+import app from "ags/gtk4/app"
+import { Astal, Gtk } from "ags/gtk4"
 
-import { App, Widget, Variable } from "ags";
-import { RefreshApps } from "./sections/refreshApps.js";
-import { ComingSoon } from "./sections/comingSoon.js";
+import { RefreshApps } from "./sections/refreshApps.js"
+import { ComingSoon } from "./sections/comingSoon.js"
 
-// Global state for menu visibility
-const isMenuOpen = Variable(false);
+let open = false
 
-/**
- * Handle Component - The floating circular button
- */
-function Handle({ onClicked }: { onClicked: () => void }) {
-    return Widget.Button({
-        class_name: "refresh-handle",
-        on_clicked: onClicked,
-        child: Widget.Box({
-            class_name: "refresh-handle-inner",
-            child: Widget.Label({
-                label: "󰑓",
-                class_name: "refresh-handle-icon",
-            }),
-        }),
-    });
+function setClasses(widget: Gtk.Widget, classes: string[]) {
+    widget.set_css_classes(classes)
 }
 
-/**
- * Drawer Panel - The main content that slides up/down
- */
+function setMenuOpen(
+    state: boolean,
+    drawer: Gtk.Revealer,
+    handleIcon: Gtk.Label,
+) {
+    open = state
+    drawer.set_reveal_child(state)
+    handleIcon.set_label(state ? "󰑕" : "󰑓")
+}
+
+function Handle(onClicked: () => void) {
+    const icon = new Gtk.Label({ label: "󰑓" })
+    setClasses(icon, ["refresh-handle-icon"])
+
+    const inner = new Gtk.Box()
+    setClasses(inner, ["refresh-handle-inner"])
+    inner.append(icon)
+
+    const button = new Gtk.Button()
+    setClasses(button, ["refresh-handle"])
+    button.set_child(inner)
+    button.connect("clicked", onClicked)
+
+    return { button, icon }
+}
+
 function DrawerPanel() {
-    return Widget.Revealer({
-        reveal_child: isMenuOpen.bind(),
-        transition: "slide_up",
+    const panel = new Gtk.Box({
+        orientation: Gtk.Orientation.VERTICAL,
+        spacing: 12,
+    })
+    setClasses(panel, ["refresh-drawer-panel"])
+
+    panel.append(RefreshApps())
+    panel.append(ComingSoon(2))
+    panel.append(ComingSoon(3))
+    panel.append(ComingSoon(4))
+
+    const revealer = new Gtk.Revealer({
+        transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
         transition_duration: 250,
-        child: Widget.Box({
-            class_name: "refresh-drawer-panel",
-            vertical: true,
-            children: [
-                RefreshApps(),
-                ComingSoon(2),
-                ComingSoon(3),
-                ComingSoon(4),
-            ],
-        }),
-    });
+    })
+    revealer.set_child(panel)
+    revealer.set_reveal_child(false)
+
+    return revealer
 }
 
-/**
- * Main container with handle and drawer
- */
 function RefreshMenuContent() {
-    return Widget.Box({
-        class_name: "refresh-menu-container",
-        vertical: true,
-        children: [
-            DrawerPanel(),
-            Handle({
-                onClicked: () => {
-                    isMenuOpen.value = !isMenuOpen.value;
-                },
-            }),
-        ],
-    });
+    const container = new Gtk.Box({
+        orientation: Gtk.Orientation.VERTICAL,
+        spacing: 12,
+    })
+    setClasses(container, ["refresh-menu-container"])
+
+    const drawer = DrawerPanel()
+    const { button, icon } = Handle(() => {
+        setMenuOpen(!open, drawer, icon)
+    })
+
+    container.append(drawer)
+    container.append(button)
+
+    return container
 }
 
-/**
- * Refresh Menu Window
- * 
- * In AGS v3, windows self-register when created
- * No need to return or export for App.config()
- */
-const RefreshMenu = Widget.Window({
+const RefreshMenu = new Astal.Window({
     name: "refresh-menu",
-    class_name: "refresh-menu-window",
-    anchor: ["bottom", "right"],
-    layer: "overlay",
-    exclusivity: "normal",
-    keymode: "none",
     visible: true,
     child: RefreshMenuContent(),
-});
+})
+setClasses(RefreshMenu, ["refresh-menu-window"])
+RefreshMenu.anchor = Astal.WindowAnchor.BOTTOM | Astal.WindowAnchor.RIGHT
+RefreshMenu.layer = Astal.Layer.OVERLAY
+RefreshMenu.exclusivity = Astal.Exclusivity.NORMAL
+RefreshMenu.keymode = Astal.Keymode.NONE
 
-// Export for potential external control
-export { isMenuOpen };
+let registered = false
+app.connect("startup", () => {
+    if (registered) return
+    app.add_window(RefreshMenu)
+    registered = true
+})

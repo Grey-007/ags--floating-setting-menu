@@ -1,26 +1,26 @@
-/**
- * Coming Soon Section - AGS v3
- */
+import { Gtk } from "ags/gtk4"
 
-import { Widget } from "ags";
-import { Section } from "../components/section.js";
+import { Section } from "../components/section.js"
 
-/**
- * Coming Soon Section - Placeholder for future features
- */
-export function ComingSoon(sectionNumber: number = 2) {
+function setClasses(widget: Gtk.Widget, classes: string[]) {
+    widget.set_css_classes(classes)
+}
+
+export function ComingSoon(sectionNumber = 2) {
+    const box = new Gtk.Box()
+    setClasses(box, ["coming-soon-content"])
+
+    const label = new Gtk.Label({
+        label: "Features coming soon...",
+    })
+    setClasses(label, ["coming-soon-label"])
+
+    box.append(label)
+
     return Section({
-        title: `Coming Soon ${sectionNumber > 2 ? `#${sectionNumber - 1}` : ''}`.trim(),
-        children: [
-            Widget.Box({
-                class_name: "coming-soon-content",
-                child: Widget.Label({
-                    label: "Features coming soon...",
-                    class_name: "coming-soon-label",
-                }),
-            }),
-        ],
+        title: `Coming Soon ${sectionNumber > 2 ? `#${sectionNumber - 1}` : ""}`.trim(),
+        children: [box],
         expanded: false,
         class_name: "coming-soon-section",
-    });
+    })
 }

@@ -1,70 +1,73 @@
-/**
- * Refresh Apps Section - AGS v3
- */
+import GLib from "gi://GLib?version=2.0"
 
-import { Widget, Variable } from "ags";
-import { Section } from "../components/section.js";
-import { commands, executeCommand } from "../utils/commands.js";
+import { Gtk } from "ags/gtk4"
+import { Section } from "../components/section.js"
+import { commands, executeCommand } from "../utils/commands.js"
 
-/**
- * Create a refresh button for a specific command
- */
-function RefreshButton(commandKey: string, command: any) {
-    const isLoading = Variable(false);
-    
-    return Widget.Button({
-        class_name: "refresh-button",
-        on_clicked: async () => {
-            if (isLoading.value) return;
-            
-            isLoading.value = true;
-            const result = await executeCommand(commandKey);
-            
-            // Show feedback
-            if (result.success) {
-                print(`✓ ${result.message}`);
-            } else {
-                print(`✗ ${result.message}`);
-            }
-            
-            // Brief delay to show loading state
-            await new Promise(resolve => setTimeout(resolve, 300));
-            isLoading.value = false;
-        },
-        child: Widget.Box({
-            class_name: "refresh-button-content",
-            children: [
-                Widget.Label({
-                    class_name: "refresh-button-icon",
-                    label: command.icon,
-                }),
-                Widget.Label({
-                    class_name: "refresh-button-label",
-                    label: command.label,
-                    hexpand: true,
-                    xalign: 0,
-                }),
-                Widget.Spinner({
-                    class_name: "refresh-button-spinner",
-                    active: isLoading.bind(),
-                }),
-            ],
-        }),
-    });
+function setClasses(widget: Gtk.Widget, classes: string[]) {
+    widget.set_css_classes(classes)
 }
 
-/**
- * Refresh Apps Section
- */
+function RefreshButton(commandKey: string, command: { label: string; icon: string }) {
+    let isLoading = false
+
+    const icon = new Gtk.Label({ label: command.icon })
+    setClasses(icon, ["refresh-button-icon"])
+
+    const label = new Gtk.Label({
+        label: command.label,
+        hexpand: true,
+        xalign: 0,
+    })
+    setClasses(label, ["refresh-button-label"])
+
+    const spinner = new Gtk.Spinner({ spinning: false, visible: false })
+    setClasses(spinner, ["refresh-button-spinner"])
+
+    const content = new Gtk.Box({
+        orientation: Gtk.Orientation.HORIZONTAL,
+        spacing: 12,
+    })
+    setClasses(content, ["refresh-button-content"])
+    content.append(icon)
+    content.append(label)
+    content.append(spinner)
+
+    const button = new Gtk.Button({ child: content })
+    setClasses(button, ["refresh-button"])
+
+    button.connect("clicked", async () => {
+        if (isLoading) return
+
+        isLoading = true
+        spinner.set_visible(true)
+        spinner.set_spinning(true)
+
+        const result = await executeCommand(commandKey)
+        if (result.success) {
+            print(`✓ ${result.message}`)
+        } else {
+            print(`✗ ${result.message}`)
+        }
+
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+            spinner.set_spinning(false)
+            spinner.set_visible(false)
+            isLoading = false
+            return GLib.SOURCE_REMOVE
+        })
+    })
+
+    return button
+}
+
 export function RefreshApps() {
-    const buttons = Object.entries(commands).map(([key, cmd]) => 
-        RefreshButton(key, cmd)
-    );
-    
+    const buttons = Object.entries(commands).map(([key, cmd]) => RefreshButton(key, cmd))
+
     return Section({
         title: "Refresh Apps",
         children: buttons,
         expanded: true,
         class_name: "refresh-apps-section",
-    });
+    })
 }
