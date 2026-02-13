@@ -1,4 +1,3 @@
-import app from "ags/gtk4/app"
 import { execAsync } from "ags/process"
 
 export interface CommandResult {
@@ -70,8 +69,12 @@ export const commands: Record<string, Command> = {
         icon: "󱂬",
         execute: async () => {
             try {
-                app.quit()
-                return { success: true, message: "AGS quit" }
+                await execAsync([
+                    "bash",
+                    "-lc",
+                    "pkill ags && ags run --gtk 4 >/dev/null 2>&1 &",
+                ])
+                return { success: true, message: "AGS restarted" }
             } catch (error) {
                 return { success: false, message: String(error) }
             }

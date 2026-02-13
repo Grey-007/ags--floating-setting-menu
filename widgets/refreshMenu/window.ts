@@ -1,39 +1,12 @@
 import app from "ags/gtk4/app"
-import { Astal, Gtk } from "ags/gtk4"
+import { Astal, Gtk, Gdk } from "ags/gtk4"
 
 import { RefreshApps } from "./sections/refreshApps.js"
 import { ComingSoon } from "./sections/comingSoon.js"
-
-let open = false
+import { closeMenu, menuState } from "./controller/menuState.js"
 
 function setClasses(widget: Gtk.Widget, classes: string[]) {
     widget.set_css_classes(classes)
-}
-
-function setMenuOpen(
-    state: boolean,
-    drawer: Gtk.Revealer,
-    handleIcon: Gtk.Label,
-) {
-    open = state
-    drawer.set_reveal_child(state)
-    handleIcon.set_label(state ? "󰑕" : "󰑓")
-}
-
-function Handle(onClicked: () => void) {
-    const icon = new Gtk.Label({ label: "󰑓" })
-    setClasses(icon, ["refresh-handle-icon"])
-
-    const inner = new Gtk.Box()
-    setClasses(inner, ["refresh-handle-inner"])
-    inner.append(icon)
-
-    const button = new Gtk.Button()
-    setClasses(button, ["refresh-handle"])
-    button.set_child(inner)
-    button.connect("clicked", onClicked)
-
-    return { button, icon }
 }
 
 function DrawerPanel() {
@@ -48,44 +21,82 @@ function DrawerPanel() {
     panel.append(ComingSoon(3))
     panel.append(ComingSoon(4))
 
-    const revealer = new Gtk.Revealer({
-        transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
-        transition_duration: 250,
-    })
-    revealer.set_child(panel)
-    revealer.set_reveal_child(false)
-
-    return revealer
+    return panel
 }
 
 function RefreshMenuContent() {
     const container = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
-        spacing: 12,
     })
     setClasses(container, ["refresh-menu-container"])
-
-    const drawer = DrawerPanel()
-    const { button, icon } = Handle(() => {
-        setMenuOpen(!open, drawer, icon)
-    })
-
-    container.append(drawer)
-    container.append(button)
-
+    container.append(DrawerPanel())
     return container
 }
 
-const RefreshMenu = new Astal.Window({
-    name: "refresh-menu",
-    visible: true,
+function setupInputHandlers(window: Astal.Window) {
+    const keyController = new Gtk.EventControllerKey()
+    keyController.connect("key-pressed", (_, keyval) => {
+        if (keyval === Gdk.KEY_Escape) {
+            closeMenu()
+            return true
+        }
+        return false
+    })
+    window.add_controller(keyController)
+
+    try {
+        window.connect("focus-out-event", () => {
+            closeMenu()
+            return false
+        })
+    } catch {
+        // Gtk4 fallback: close when window deactivates.
+        window.connect("notify::is-active", () => {
+            if (!window.is_active) {
+                closeMenu()
+            }
+        })
+    }
+}
+
+const drawerRevealer = new Gtk.Revealer({
+    transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
+    transition_duration: 150,
+    reveal_child: false,
     child: RefreshMenuContent(),
 })
-setClasses(RefreshMenu, ["refresh-menu-window"])
+
+const RefreshMenu = new Astal.Window({
+    name: "refresh-menu",
+    visible: false,
+    child: drawerRevealer,
+})
+setClasses(RefreshMenu, ["refresh-menu-window", "is-closed"])
 RefreshMenu.anchor = Astal.WindowAnchor.BOTTOM | Astal.WindowAnchor.RIGHT
 RefreshMenu.layer = Astal.Layer.OVERLAY
 RefreshMenu.exclusivity = Astal.Exclusivity.NORMAL
-RefreshMenu.keymode = Astal.Keymode.NONE
+RefreshMenu.keymode = Astal.Keymode.ON_DEMAND
+
+setupInputHandlers(RefreshMenu)
+
+menuState.subscribe((open) => {
+    if (open) {
+        RefreshMenu.visible = true
+        setClasses(RefreshMenu, ["refresh-menu-window", "is-open"])
+        drawerRevealer.set_reveal_child(true)
+        RefreshMenu.present()
+        return
+    }
+
+    setClasses(RefreshMenu, ["refresh-menu-window", "is-closed"])
+    drawerRevealer.set_reveal_child(false)
+})
+
+drawerRevealer.connect("notify::child-revealed", () => {
+    if (!drawerRevealer.get_reveal_child() && !drawerRevealer.get_child_revealed()) {
+        RefreshMenu.visible = false
+    }
+})
 
 let registered = false
 app.connect("startup", () => {

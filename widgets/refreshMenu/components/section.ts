@@ -19,6 +19,11 @@ export function Section({
 }: SectionProps) {
     let isExpanded = expanded
 
+    const baseClasses = ["section"]
+    if (class_name.trim().length > 0) {
+        baseClasses.push(...class_name.trim().split(/\s+/))
+    }
+
     const titleLabel = new Gtk.Label({
         label: title,
         hexpand: true,
@@ -45,7 +50,7 @@ export function Section({
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 6,
     })
-    setClasses(contentBox, ["section-content"])
+    setClasses(contentBox, ["section-content", expanded ? "is-expanded" : "is-collapsed"])
     for (const child of children) {
         contentBox.append(child)
     }
@@ -57,22 +62,27 @@ export function Section({
         child: contentBox,
     })
 
-    header.connect("clicked", () => {
-        isExpanded = !isExpanded
-        content.set_reveal_child(isExpanded)
-        chevron.set_label(isExpanded ? "▾" : "▸")
-    })
-
     const section = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 8,
     })
 
-    const baseClasses = ["section"]
-    if (class_name.trim().length > 0) {
-        baseClasses.push(...class_name.trim().split(/\s+/))
+    const updateVisualState = (expandedState: boolean) => {
+        setClasses(section, [...baseClasses, expandedState ? "is-expanded" : "is-collapsed"])
+        setClasses(contentBox, [
+            "section-content",
+            expandedState ? "is-expanded" : "is-collapsed",
+        ])
+        chevron.set_label(expandedState ? "▾" : "▸")
     }
-    setClasses(section, baseClasses)
+
+    updateVisualState(expanded)
+
+    header.connect("clicked", () => {
+        isExpanded = !isExpanded
+        content.set_reveal_child(isExpanded)
+        updateVisualState(isExpanded)
+    })
 
     section.append(header)
     section.append(content)
