@@ -17,8 +17,25 @@ export const commands: Record<string, Command> = {
         icon: "󰓇",
         execute: async () => {
             try {
-                await execAsync(["bash", "-c", "pkill spotify && spotify &"])
+                await execAsync(["bash", "-lc", "pkill spotify; spotify >/dev/null 2>&1 &"])
                 return { success: true, message: "Spotify restarted" }
+            } catch (error) {
+                return { success: false, message: String(error) }
+            }
+        },
+    },
+
+    spicetify: {
+        label: "Spicetify",
+        icon: "󰓎",
+        execute: async () => {
+            try {
+                await execAsync([
+                    "bash",
+                    "-lc",
+                    "spicetify apply && pkill spotify; spotify >/dev/null 2>&1 &",
+                ])
+                return { success: true, message: "Spicetify applied + Spotify restarted" }
             } catch (error) {
                 return { success: false, message: String(error) }
             }
@@ -43,7 +60,7 @@ export const commands: Record<string, Command> = {
         icon: "󰣇",
         execute: async () => {
             try {
-                await execAsync(["bash", "-c", "pkill rofi && rofi &"])
+                await execAsync(["bash", "-lc", "pkill rofi; rofi >/dev/null 2>&1 &"])
                 return { success: true, message: "Rofi restarted" }
             } catch (error) {
                 return { success: false, message: String(error) }
@@ -56,7 +73,7 @@ export const commands: Record<string, Command> = {
         icon: "󰍹",
         execute: async () => {
             try {
-                await execAsync(["bash", "-c", "pkill waybar && waybar &"])
+                await execAsync(["bash", "-lc", "pkill waybar; waybar >/dev/null 2>&1 &"])
                 return { success: true, message: "Waybar restarted" }
             } catch (error) {
                 return { success: false, message: String(error) }

@@ -2,13 +2,32 @@ import app from "ags/gtk4/app"
 import { Astal, Gtk } from "ags/gtk4"
 
 import { menuState, toggleMenu } from "../refreshMenu/controller/menuState.js"
+import {
+    modulePosition,
+    getFabPlacement,
+    getPositionClass,
+    type Placement,
+} from "../refreshMenu/controller/layout.js"
 
 function setClasses(widget: Gtk.Widget, classes: string[]) {
     widget.set_css_classes(classes)
 }
 
-function setFabVisualState(button: Gtk.Button, icon: Gtk.Label, isOpen: boolean) {
-    setClasses(button, ["fab-button", isOpen ? "is-open" : "is-closed"])
+function applyPlacement(window: Astal.Window, placement: Placement) {
+    window.anchor = placement.anchor
+    window.marginTop = placement.marginTop
+    window.marginRight = placement.marginRight
+    window.marginBottom = placement.marginBottom
+    window.marginLeft = placement.marginLeft
+}
+
+function setFabVisualState(
+    button: Gtk.Button,
+    icon: Gtk.Label,
+    isOpen: boolean,
+    positionClass: string,
+) {
+    setClasses(button, ["fab-button", isOpen ? "is-open" : "is-closed", positionClass])
     setClasses(icon, ["fab-icon", isOpen ? "is-open" : "is-closed"])
     icon.label = isOpen ? "󰅖" : "󰒓"
 }
@@ -18,14 +37,19 @@ function FabButton() {
     setClasses(icon, ["fab-icon", "is-closed"])
 
     const button = new Gtk.Button({ child: icon })
-    setClasses(button, ["fab-button", "is-closed"])
+    setClasses(button, ["fab-button", "is-closed", "position-bottom"])
     button.connect("clicked", () => {
         toggleMenu()
     })
 
-    menuState.subscribe((isOpen) => {
-        setFabVisualState(button, icon, isOpen)
-    })
+    const update = () => {
+        const isOpen = menuState.get()
+        const positionClass = getPositionClass(modulePosition.get())
+        setFabVisualState(button, icon, isOpen, positionClass)
+    }
+
+    menuState.subscribe(() => update())
+    modulePosition.subscribe(() => update())
 
     return button
 }
@@ -35,15 +59,15 @@ const FabWindow = new Astal.Window({
     visible: true,
     child: FabButton(),
 })
-setClasses(FabWindow, ["fab-window"])
-FabWindow.anchor = Astal.WindowAnchor.BOTTOM | Astal.WindowAnchor.RIGHT
+setClasses(FabWindow, ["fab-window", "position-bottom"])
 FabWindow.layer = Astal.Layer.OVERLAY
 FabWindow.exclusivity = Astal.Exclusivity.IGNORE
 FabWindow.keymode = Astal.Keymode.NONE
-FabWindow.marginBottom = 24
-FabWindow.marginRight = 24
-FabWindow.marginTop = 0
-FabWindow.marginLeft = 0
+
+modulePosition.subscribe((position) => {
+    applyPlacement(FabWindow, getFabPlacement(position))
+    setClasses(FabWindow, ["fab-window", getPositionClass(position)])
+})
 
 let registered = false
 app.connect("startup", () => {

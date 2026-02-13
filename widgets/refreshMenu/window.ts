@@ -2,11 +2,26 @@ import app from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from "ags/gtk4"
 
 import { RefreshApps } from "./sections/refreshApps.js"
+import { PositionControls } from "./sections/layoutPosition.js"
 import { ComingSoon } from "./sections/comingSoon.js"
 import { closeMenu, menuState } from "./controller/menuState.js"
+import {
+    modulePosition,
+    getMenuPlacement,
+    getPositionClass,
+    type Placement,
+} from "./controller/layout.js"
 
 function setClasses(widget: Gtk.Widget, classes: string[]) {
     widget.set_css_classes(classes)
+}
+
+function applyPlacement(window: Astal.Window, placement: Placement) {
+    window.anchor = placement.anchor
+    window.marginTop = placement.marginTop
+    window.marginRight = placement.marginRight
+    window.marginBottom = placement.marginBottom
+    window.marginLeft = placement.marginLeft
 }
 
 function DrawerPanel() {
@@ -17,9 +32,8 @@ function DrawerPanel() {
     setClasses(panel, ["refresh-drawer-panel"])
 
     panel.append(RefreshApps())
-    panel.append(ComingSoon(2))
-    panel.append(ComingSoon(3))
-    panel.append(ComingSoon(4))
+    panel.append(PositionControls())
+    panel.append(ComingSoon("Power Actions"))
 
     return panel
 }
@@ -44,24 +58,25 @@ function setupInputHandlers(window: Astal.Window) {
     })
     window.add_controller(keyController)
 
+    window.connect("notify::is-active", () => {
+        if (!window.is_active && menuState.get()) {
+            closeMenu()
+        }
+    })
+
     try {
         window.connect("focus-out-event", () => {
             closeMenu()
             return false
         })
     } catch {
-        // Gtk4 fallback: close when window deactivates.
-        window.connect("notify::is-active", () => {
-            if (!window.is_active) {
-                closeMenu()
-            }
-        })
+        // Gtk4 backend may not expose this signal on all setups.
     }
 }
 
 const drawerRevealer = new Gtk.Revealer({
     transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
-    transition_duration: 150,
+    transition_duration: 190,
     reveal_child: false,
     child: RefreshMenuContent(),
 })
@@ -71,24 +86,37 @@ const RefreshMenu = new Astal.Window({
     visible: false,
     child: drawerRevealer,
 })
-setClasses(RefreshMenu, ["refresh-menu-window", "is-closed"])
-RefreshMenu.anchor = Astal.WindowAnchor.BOTTOM | Astal.WindowAnchor.RIGHT
+setClasses(RefreshMenu, ["refresh-menu-window", "is-closed", "position-bottom"])
 RefreshMenu.layer = Astal.Layer.OVERLAY
 RefreshMenu.exclusivity = Astal.Exclusivity.NORMAL
 RefreshMenu.keymode = Astal.Keymode.ON_DEMAND
 
 setupInputHandlers(RefreshMenu)
 
+modulePosition.subscribe((position) => {
+    const placement = getMenuPlacement(position)
+    applyPlacement(RefreshMenu, placement)
+
+    const isOpen = menuState.get()
+    setClasses(RefreshMenu, [
+        "refresh-menu-window",
+        isOpen ? "is-open" : "is-closed",
+        getPositionClass(position),
+    ])
+})
+
 menuState.subscribe((open) => {
+    const positionClass = getPositionClass(modulePosition.get())
+
     if (open) {
         RefreshMenu.visible = true
-        setClasses(RefreshMenu, ["refresh-menu-window", "is-open"])
+        setClasses(RefreshMenu, ["refresh-menu-window", "is-open", positionClass])
         drawerRevealer.set_reveal_child(true)
         RefreshMenu.present()
         return
     }
 
-    setClasses(RefreshMenu, ["refresh-menu-window", "is-closed"])
+    setClasses(RefreshMenu, ["refresh-menu-window", "is-closed", positionClass])
     drawerRevealer.set_reveal_child(false)
 })
 
