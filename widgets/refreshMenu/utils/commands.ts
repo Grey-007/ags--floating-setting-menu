@@ -55,6 +55,23 @@ export const commands: Record<string, Command> = {
         },
     },
 
+    powerMenu: {
+        label: "Power Menu",
+        icon: "󰐥",
+        execute: async () => {
+            try {
+                await execAsync([
+                    "bash",
+                    "-lc",
+                    'if command -v wlogout >/dev/null 2>&1; then wlogout; elif command -v rofi >/dev/null 2>&1; then rofi -show power-menu; else echo "No power menu app found (install wlogout or rofi)" >&2; exit 1; fi',
+                ])
+                return { success: true, message: "Power menu opened" }
+            } catch (error) {
+                return { success: false, message: String(error) }
+            }
+        },
+    },
+
     rofi: {
         label: "Rofi",
         icon: "󰣇",

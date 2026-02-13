@@ -1,3 +1,4 @@
+import GLib from "gi://GLib?version=2.0"
 import { Astal } from "ags/gtk4"
 
 export type ModulePosition = "bottom" | "top" | "left" | "right"
@@ -14,6 +15,40 @@ export type Variable<T> = {
     get: () => T
     set: (value: T) => void
     subscribe: (callback: (value: T) => void) => () => void
+}
+
+const STATE_DIR = `${GLib.get_user_state_dir()}/ags`
+const POSITION_FILE = `${STATE_DIR}/refresh-menu-position`
+
+function parsePosition(value: string): ModulePosition {
+    switch (value.trim()) {
+        case "top":
+        case "left":
+        case "right":
+            return value.trim()
+        case "bottom":
+        default:
+            return "bottom"
+    }
+}
+
+function readPersistedPosition(): ModulePosition {
+    try {
+        const [ok, contents] = GLib.file_get_contents(POSITION_FILE)
+        if (!ok || !contents) return "bottom"
+        return parsePosition(new TextDecoder().decode(contents))
+    } catch {
+        return "bottom"
+    }
+}
+
+function persistPosition(position: ModulePosition) {
+    try {
+        GLib.mkdir_with_parents(STATE_DIR, 0o755)
+        GLib.file_set_contents(POSITION_FILE, position)
+    } catch {
+        // ignore persistence errors
+    }
 }
 
 function createVariable<T>(initial: T): Variable<T> {
@@ -41,9 +76,9 @@ function createVariable<T>(initial: T): Variable<T> {
     }
 }
 
-const EDGE = 24
+const EDGE = 0
 const FAB_SIZE = 56
-const GAP = 14
+const GAP = 12
 
 const bottomFab: Placement = {
     anchor: Astal.WindowAnchor.BOTTOM,
@@ -109,10 +144,11 @@ const rightMenu: Placement = {
     marginLeft: 0,
 }
 
-export const modulePosition = createVariable<ModulePosition>("bottom")
+export const modulePosition = createVariable<ModulePosition>(readPersistedPosition())
 
 export function setModulePosition(position: ModulePosition) {
     modulePosition.set(position)
+    persistPosition(position)
 }
 
 export function getFabPlacement(position: ModulePosition): Placement {

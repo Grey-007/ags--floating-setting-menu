@@ -35,15 +35,15 @@
 
 .refresh-menu-window.is-open .refresh-drawer-panel {
     opacity: 1;
-    transform: scale(1);
+    transform: translateX(0) translateY(0) rotate(0deg) scale(1);
     box-shadow:
         0 6px 12px rgba(0, 0, 0, 0.32),
         0 20px 42px rgba(0, 0, 0, 0.44);
 }
 
 .refresh-menu-window.is-closed .refresh-drawer-panel {
-    opacity: 0.92;
-    transform: scale(0.975);
+    opacity: 0;
+    transform: translateX(30px) translateY(14px) rotate(1.1deg) scale(0.97);
 }
 
 .refresh-menu-window.position-bottom .refresh-drawer-panel {
@@ -81,9 +81,9 @@
     transition:
         background-color var(--duration-mid) ease,
         border-color var(--duration-mid) ease,
-        box-shadow var(--duration-mid) ease,
-        opacity var(--duration-mid) ease,
-        transform var(--duration-mid) ease;
+        box-shadow 180ms cubic-bezier(.2,.8,.2,1),
+        opacity 180ms cubic-bezier(.2,.8,.2,1),
+        transform 180ms cubic-bezier(.2,.8,.2,1);
 }
 
 .refresh-drawer-panel > * + * {
@@ -119,8 +119,8 @@
 }
 
 .position-button {
-    border: 1px solid rgba(154, 194, 255, 0.18);
-    background-color: rgba(154, 194, 255, 0.08);
+    border: 1px solid rgba(154, 194, 255, 0.2);
+    background-color: rgba(154, 194, 255, 0.09);
     border-radius: 14px;
     padding: 9px 10px;
     transition:
@@ -132,14 +132,14 @@
 
 .position-button:hover {
     transform: scale(1.02);
-    background-color: rgba(154, 194, 255, 0.14);
+    background-color: rgba(154, 194, 255, 0.16);
     border-color: rgba(154, 194, 255, 0.34);
 }
 
 .position-button.is-active {
-    background-color: rgba(154, 194, 255, 0.22);
-    border-color: rgba(154, 194, 255, 0.54);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    background-color: rgba(154, 194, 255, 0.24);
+    border-color: rgba(154, 194, 255, 0.56);
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.2);
 }
 
 .position-button-icon {
@@ -152,6 +152,7 @@
     font-size: 12px;
     font-weight: 600;
 }
+
 
 .section {
     background-color: var(--md-surface-2);
@@ -323,16 +324,31 @@
         background-color var(--duration-fast) ease;
 }
 
+.fab-window.position-bottom .fab-button {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.fab-window.position-top .fab-button {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.fab-window.position-left .fab-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.fab-window.position-right .fab-button {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 .fab-button.is-open {
     background-color: #a9cbff;
     box-shadow:
         0 8px 14px rgba(0, 0, 0, 0.34),
         0 18px 34px rgba(0, 0, 0, 0.42);
-}
-
-.fab-window.position-left .fab-button.is-open,
-.fab-window.position-right .fab-button.is-open {
-    transform: scale(1.04);
 }
 
 .fab-button:hover {

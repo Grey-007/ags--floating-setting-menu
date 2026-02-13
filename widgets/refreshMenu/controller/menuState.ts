@@ -34,16 +34,16 @@ function createBooleanVariable(initial: boolean): Variable<boolean> {
     }
 }
 
-export const menuState: Variable<boolean> = createBooleanVariable(false)
+export const menuOpen = createBooleanVariable(false)
 
 export function openMenu() {
-    menuState.set(true)
+    menuOpen.set(true)
 }
 
 export function closeMenu() {
-    menuState.set(false)
+    menuOpen.set(false)
 }
 
 export function toggleMenu() {
-    menuState.toggle()
+    menuOpen.toggle()
 }

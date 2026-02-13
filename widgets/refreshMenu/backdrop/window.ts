@@ -1,7 +1,7 @@
 import app from "ags/gtk4/app"
 import { Astal, Gtk } from "ags/gtk4"
 
-import { closeMenu, menuState } from "../controller/menuState.js"
+import { closeMenu, menuOpen } from "../controller/menuState.js"
 
 function setClasses(widget: Gtk.Widget, classes: string[]) {
     widget.set_css_classes(classes)
@@ -38,7 +38,7 @@ Backdrop.layer = Astal.Layer.TOP
 Backdrop.exclusivity = Astal.Exclusivity.IGNORE
 Backdrop.keymode = Astal.Keymode.NONE
 
-menuState.subscribe((open) => {
+menuOpen.subscribe((open) => {
     if (open) {
         Backdrop.visible = true
         setClasses(Backdrop, ["menu-backdrop-window", "is-open"])
@@ -51,7 +51,7 @@ menuState.subscribe((open) => {
 })
 
 scrimRevealer.connect("notify::child-revealed", () => {
-    if (!scrimRevealer.get_reveal_child() && !scrimRevealer.get_child_revealed()) {
+    if (!menuOpen.get() && !scrimRevealer.get_child_revealed()) {
         Backdrop.visible = false
     }
 })

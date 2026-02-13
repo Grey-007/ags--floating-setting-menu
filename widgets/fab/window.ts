@@ -1,7 +1,7 @@
 import app from "ags/gtk4/app"
 import { Astal, Gtk } from "ags/gtk4"
 
-import { menuState, toggleMenu } from "../refreshMenu/controller/menuState.js"
+import { menuOpen, toggleMenu } from "../refreshMenu/controller/menuState.js"
 import {
     modulePosition,
     getFabPlacement,
@@ -42,14 +42,14 @@ function FabButton() {
         toggleMenu()
     })
 
-    const update = () => {
-        const isOpen = menuState.get()
+    const updateVisuals = () => {
+        const open = menuOpen.get()
         const positionClass = getPositionClass(modulePosition.get())
-        setFabVisualState(button, icon, isOpen, positionClass)
+        setFabVisualState(button, icon, open, positionClass)
     }
 
-    menuState.subscribe(() => update())
-    modulePosition.subscribe(() => update())
+    menuOpen.subscribe(() => updateVisuals())
+    modulePosition.subscribe(() => updateVisuals())
 
     return button
 }

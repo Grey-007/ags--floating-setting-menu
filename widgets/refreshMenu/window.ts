@@ -4,7 +4,7 @@ import { Astal, Gtk, Gdk } from "ags/gtk4"
 import { RefreshApps } from "./sections/refreshApps.js"
 import { PositionControls } from "./sections/layoutPosition.js"
 import { ComingSoon } from "./sections/comingSoon.js"
-import { closeMenu, menuState } from "./controller/menuState.js"
+import { closeMenu, menuOpen } from "./controller/menuState.js"
 import {
     modulePosition,
     getMenuPlacement,
@@ -33,7 +33,7 @@ function DrawerPanel() {
 
     panel.append(RefreshApps())
     panel.append(PositionControls())
-    panel.append(ComingSoon("Power Actions"))
+    panel.append(ComingSoon("Automation"))
 
     return panel
 }
@@ -59,7 +59,7 @@ function setupInputHandlers(window: Astal.Window) {
     window.add_controller(keyController)
 
     window.connect("notify::is-active", () => {
-        if (!window.is_active && menuState.get()) {
+        if (!window.is_active && menuOpen.get()) {
             closeMenu()
         }
     })
@@ -75,8 +75,8 @@ function setupInputHandlers(window: Astal.Window) {
 }
 
 const drawerRevealer = new Gtk.Revealer({
-    transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
-    transition_duration: 190,
+    transition_type: Gtk.RevealerTransitionType.CROSSFADE,
+    transition_duration: 1,
     reveal_child: false,
     child: RefreshMenuContent(),
 })
@@ -97,15 +97,11 @@ modulePosition.subscribe((position) => {
     const placement = getMenuPlacement(position)
     applyPlacement(RefreshMenu, placement)
 
-    const isOpen = menuState.get()
-    setClasses(RefreshMenu, [
-        "refresh-menu-window",
-        isOpen ? "is-open" : "is-closed",
-        getPositionClass(position),
-    ])
+    const openClass = menuOpen.get() ? "is-open" : "is-closed"
+    setClasses(RefreshMenu, ["refresh-menu-window", openClass, getPositionClass(position)])
 })
 
-menuState.subscribe((open) => {
+menuOpen.subscribe((open) => {
     const positionClass = getPositionClass(modulePosition.get())
 
     if (open) {
@@ -121,7 +117,7 @@ menuState.subscribe((open) => {
 })
 
 drawerRevealer.connect("notify::child-revealed", () => {
-    if (!drawerRevealer.get_reveal_child() && !drawerRevealer.get_child_revealed()) {
+    if (!menuOpen.get() && !drawerRevealer.get_child_revealed()) {
         RefreshMenu.visible = false
     }
 })
